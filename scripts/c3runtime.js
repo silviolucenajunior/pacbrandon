@@ -2737,64 +2737,12 @@ AddRemoteURL(url,type,name){this._remoteUrls.set(name.toLowerCase(),{url,type})}
 SampleRate(){return this._sampleRate},CurrentTime(){if(self["C3_GetAudioContextCurrentTime"])return self["C3_GetAudioContextCurrentTime"]();else return performance.now()/1E3}}};
 
 
-'use strict';{const C3=self.C3;C3.Behaviors.TileMovement=class TileMovementBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
-
-
-'use strict';{const C3=self.C3;C3.Behaviors.TileMovement.Type=class TileMovementType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}};
-
-
-'use strict';{const C3=self.C3;const IBehaviorInstance=self.IBehaviorInstance;const GRID_WIDTH=0;const GRID_HEIGHT=1;const GRID_OFFSET_X=2;const GRID_OFFSET_Y=3;const SPEED_X=4;const SPEED_Y=5;const ENABLED=6;const DEFAULT_CONTROLS=7;const MIN_OFFSET=.01;const PUSH_BACK_SPEED=10;const tempCandidates=[];C3.Behaviors.TileMovement.Instance=class TileMovementInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst);this._upKey=false;this._downKey=false;this._leftKey=false;
-this._rightKey=false;this._ignoreInput=false;this._simUp=false;this._simDown=false;this._simLeft=false;this._simRight=false;this._gridWidth=32;this._gridHeight=32;this._gridOffsetX=0;this._gridOffsetY=0;this._speedX=100;this._speedY=100;if(properties){this._gridWidth=properties[0];this._gridHeight=properties[1];this._gridOffsetX=properties[2];this._gridOffsetY=properties[3];this._speedX=properties[4];this._speedY=properties[5]}this._targetX=0;this._targetY=0;this._targetGridX=0;this._targetGridY=
-0;this._lastX=NaN;this._lastY=NaN;this._lastX2=NaN;this._lastY2=NaN;this._collisionRect=C3.New(C3.Rect);this._isEnabled=properties[6];this._defaultControls=properties[7];this._iso=properties[8];this._disposables=null;if(this._isEnabled)this._StartTicking();if(this._defaultControls)this._BindEvents();this._ResetTarget()}Release(){this._UnBindEvents();super.Release()}_BindEvents(){if(this._disposables)return;const rt=this._runtime.Dispatcher();this._disposables=new C3.CompositeDisposable(C3.Disposable.From(rt,
-"keydown",e=>this._OnKeyDown(e.data)),C3.Disposable.From(rt,"keyup",e=>this._OnKeyUp(e.data)),C3.Disposable.From(rt,"window-blur",()=>this._OnWindowBlur()))}_UnBindEvents(){if(!this._disposables)return;this._disposables.Release();this._disposables=null}_OnKeyDown(data){switch(data["key"]){case "ArrowLeft":this._leftKey=true;break;case "ArrowUp":this._upKey=true;break;case "ArrowRight":this._rightKey=true;break;case "ArrowDown":this._downKey=true;break}}_OnKeyUp(data){switch(data["key"]){case "ArrowLeft":this._leftKey=
-false;break;case "ArrowUp":this._upKey=false;break;case "ArrowRight":this._rightKey=false;break;case "ArrowDown":this._downKey=false;break}}_OnWindowBlur(){this._upKey=false;this._downKey=false;this._leftKey=false;this._rightKey=false}_ResetLastPositions(){this._lastX=NaN;this._lastY=NaN;this._lastX2=NaN;this._lastY2=NaN}SaveToJson(){return{"gw":this._gridWidth,"gh":this._gridHeight,"ox":this._gridOffsetX,"oy":this._gridOffsetY,"sx":this._speedX,"sy":this._speedY,"x":this._targetX,"y":this._targetY,
-"gx":this._targetGridX,"gy":this._targetGridY,"e":this._isEnabled,"i":this._ignoreInput,"c":this._defaultControls}}LoadFromJson(o){this._gridWidth=o["gw"];this._gridHeight=o["gh"];this._gridOffsetX=o["ox"];this._gridOffsetY=o["oy"];this._speedX=o["sx"];this._speedY=o["sy"];this._targetX=o["x"];this._targetY=o["y"];this._targetGridX=o["gx"];this._targetGridY=o["gy"];this._isEnabled=!!o["e"];this._ignoreInput=!!o["i"];this._defaultControls=!!o["c"];if(this._isEnabled)this._StartTicking();else{this._simLeft=
-false;this._simRight=false;this._simUp=false;this._simDown=false;this._StopTicking()}if(this._defaultControls)this._BindEvents();else this._UnBindEvents();this._ResetLastPositions()}_GetTargetDelta(){const wi=this.GetWorldInfo();const dx=this._targetX-wi.GetX();const dy=this._targetY-wi.GetY();return[dx,dy]}IsMoving(){const [dx,dy]=this._GetTargetDelta();return Math.abs(dx)>0&&this._speedX!==0||Math.abs(dy)>0&&this._speedY!==0}IsMovingDirection(dir){const [dx,dy]=this._GetTargetDelta();if(dir<2&&
-this._speedX!==0)return dir===0?dx>0:dx<0;else if(this._speedY!==0)return dir===2?dy>0:dy<0;else return false}CanMoveTo(x,y){const wi=this.GetWorldInfo();const oldX=wi.GetX();const oldY=wi.GetY();const pos=this._WorldPosition(x,y);wi.SetX(pos[0]);wi.SetY(pos[1]);wi.SetBboxChanged();const collision=this._TestCollision();wi.SetX(oldX);wi.SetY(oldY);wi.SetBboxChanged();return!collision}CanMoveDirection(dir,distance){const wi=this.GetWorldInfo();const oldX=wi.GetX();const oldY=wi.GetY();let incrementX=
-0;let incrementY=0;switch(dir){case 0:incrementX=1;break;case 1:incrementX=-1;break;case 2:incrementY=1;break;case 3:incrementY=-1;break}distance=Math.floor(distance);if(distance<0){incrementX=-incrementX;incrementY=-incrementY;distance=-distance}let x=this._GridX(oldX,oldY);let y=this._GridY(oldX,oldY);let collision=null;for(let i=0;i<distance;i++){x+=incrementX;y+=incrementY;const pos=this._WorldPosition(x,y);wi.SetX(pos[0]);wi.SetY(pos[1]);wi.SetBboxChanged();collision=this._TestCollision();if(collision)break}wi.SetX(oldX);
-wi.SetY(oldY);wi.SetBboxChanged();return!collision}SetIgnoreInput(ignore){this._ignoreInput=!!ignore}GetDefaultControls(){return this._defaultControls}SimulateControl(ctrl){if(!this._isEnabled)return;switch(ctrl){case 0:this._simLeft=true;break;case 1:this._simRight=true;break;case 2:this._simUp=true;break;case 3:this._simDown=true;break}}SetSpeed(x,y){this._speedX=x;this._speedY=y}SetGridPosition(x,y,immediate){immediate=!!immediate;const didMove=!this._UpdateTarget(x,y);if(didMove&&immediate)this._MoveToTarget()}SetGridDimensions(width,
-height,x,y){this._gridWidth=width;this._gridHeight=height;this._gridOffsetX=x;this._gridOffsetY=y;this._TargetCurrentPositon()}_GridX(worldX,worldY){if(this._iso)return this._IsoGridX(worldX,worldY);worldX-=this._gridOffsetX;worldX/=this._gridWidth;return Math.round(worldX)}_GridY(worldX,worldY){if(this._iso)return this._IsoGridY(worldX,worldY);worldY-=this._gridOffsetY;worldY/=this._gridHeight;return Math.round(worldY)}_IsoGridX(worldX,worldY){worldX-=this._gridOffsetX;worldY-=this._gridOffsetY;
-worldX/=this._gridWidth/2;worldY/=this._gridHeight/2;const x=(worldX+worldY)/2;return Math.round(x)}_IsoGridY(worldX,worldY){worldX-=this._gridOffsetX;worldY-=this._gridOffsetY;worldX/=this._gridWidth/2;worldY/=this._gridHeight/2;const y=(worldY-worldX)/2;return Math.round(y)}_ClampedGridPosition(worldX,worldY){const [x,y]=this._GridPosition(worldX,worldY);return[Math.round(x),Math.round(y)]}_GridPosition(worldX,worldY){if(this._iso)return this._IsoGridPosition(worldX,worldY);worldX-=this._gridOffsetX;
-worldY-=this._gridOffsetY;worldX/=this._gridWidth;worldY/=this._gridHeight;return[worldX,worldY]}_WorldPosition(gridX,gridY){if(this._iso)return this._IsoWorldPosition(gridX,gridY);gridX*=this._gridWidth;gridY*=this._gridHeight;gridX+=this._gridOffsetX;gridY+=this._gridOffsetY;return[gridX,gridY]}_IsoGridPosition(worldX,worldY){worldX-=this._gridOffsetX;worldY-=this._gridOffsetY;worldX/=this._gridWidth/2;worldY/=this._gridHeight/2;const x=(worldX+worldY)/2;const y=(worldY-worldX)/2;return[x,y]}_IsoWorldPosition(gridX,
-gridY){let x=gridX-gridY;let y=gridX+gridY;x*=this._gridWidth/2;y*=this._gridHeight/2;x+=this._gridOffsetX;y+=this._gridOffsetY;return[x,y]}_UpdateTarget(tx,ty){const wi=this.GetWorldInfo();const oldX=wi.GetX();const oldY=wi.GetY();const pos=this._WorldPosition(tx,ty);wi.SetX(pos[0]);wi.SetY(pos[1]);wi.SetBboxChanged();const collision=this._TestCollision();wi.SetX(oldX);wi.SetY(oldY);wi.SetBboxChanged();if(!collision){this._targetGridX=tx;this._targetGridY=ty;this._targetX=pos[0];this._targetY=pos[1];
-this._ResetLastPositions();return false}else return true}_MoveToTarget(){const wi=this.GetWorldInfo();wi.SetXY(this._targetX,this._targetY);wi.SetBboxChanged()}_TargetCurrentPositon(){const wi=this.GetWorldInfo();const gridPosition=this._ClampedGridPosition(wi.GetX(),wi.GetY());const position=this._WorldPosition(gridPosition[0],gridPosition[1]);this._targetGridX=gridPosition[0];this._targetGridY=gridPosition[1];this._targetX=position[0];this._targetY=position[1];this._ResetLastPositions()}_ResetTarget(){this._TargetCurrentPositon();
-this._MoveToTarget()}_UpdateCollisionRect(){const wi=this.GetWorldInfo();const a=wi.GetBoundingBox();this._collisionRect.copy(a);let offsetX=MIN_OFFSET;let offsetY=MIN_OFFSET;const width=a.width();const height=a.height();if(width<MIN_OFFSET+MIN_OFFSET){const midX=a.midX();offsetX=0;a.setRight(midX);a.setLeft(midX)}if(height<MIN_OFFSET+MIN_OFFSET){const midY=a.midY();offsetY=0;a.setRight(midY);a.setLeft(midY)}this._collisionRect.deflate(offsetX,offsetY);return this._collisionRect}_TestCollision(){const collisionEngine=
-this._runtime.GetCollisionEngine();const rect=this._UpdateCollisionRect();const inst=this.GetObjectInstance();collisionEngine.GetSolidCollisionCandidates(null,rect,tempCandidates);for(const s of tempCandidates){if(s===inst||!collisionEngine.IsSolidCollisionAllowed(s,inst))continue;if(collisionEngine.TestRectOverlap(rect,s)){C3.clearArray(tempCandidates);return s}}C3.clearArray(tempCandidates);return null}_MaybePushOut(){const collisionEngine=this._runtime.GetCollisionEngine();const collision=this._TestCollision();
-if(!collision)return null;const wi=this.GetWorldInfo();const oldX=wi.GetX();const oldY=wi.GetY();const a=wi.GetBoundingBox();const b=collision.GetWorldInfo().GetBoundingBox();const combinedWidth=Math.max(a.getRight(),b.getRight())-Math.min(a.getLeft(),b.getLeft());const combinedHeight=Math.max(a.getBottom(),b.getBottom())-Math.min(a.getTop(),b.getTop());let overlapX=a.width()+b.width()-combinedWidth;let overlapY=a.height()+b.height()-combinedHeight;let cappedMovement=false;if(overlapX<overlapY){if(overlapX>
-PUSH_BACK_SPEED)cappedMovement=true;overlapX=Math.min(overlapX,PUSH_BACK_SPEED);if(a.getLeft()<b.getLeft())wi.OffsetX(-overlapX);else wi.OffsetX(overlapX)}else{if(overlapY>PUSH_BACK_SPEED)cappedMovement=true;overlapY=Math.min(overlapY,PUSH_BACK_SPEED);if(a.getTop()<b.getTop())wi.OffsetY(-overlapY);else wi.OffsetY(overlapY)}wi.SetBboxChanged();if(this._TestCollision()){wi.SetX(oldX);wi.SetY(oldY);wi.SetBboxChanged()}if(cappedMovement)collisionEngine.RegisterCollision(this._inst,collision);this._TargetCurrentPositon();
-return collision}Tick(){const dt=this._runtime.GetDt(this._inst);const wi=this.GetWorldInfo();this._lastX2=this._lastX;this._lastY2=this._lastY;this._lastX=wi.GetX();this._lastY=wi.GetY();let left=this._leftKey||this._simLeft;let right=this._rightKey||this._simRight;let up=this._upKey||this._simUp;let down=this._downKey||this._simDown;this._simLeft=false;this._simRight=false;this._simUp=false;this._simDown=false;if(!this._isEnabled)return;if(this._ignoreInput)left=right=up=down=false;if(up&&down)up=
-down=false;if(left&&right)left=right=false;if(this._MaybePushOut())return;const oldX=wi.GetX();const oldY=wi.GetY();const stepX=dt*this._speedX;const stepY=dt*this._speedY;let tx=this._targetGridX;let ty=this._targetGridY;let dx=this._targetX-oldX;let dy=this._targetY-oldY;let adx=Math.abs(dx);let ady=Math.abs(dy);let offX=0;let offY=0;if(adx>0){const n=Math.sign(dx);const moveLeft=n<0&&left;const moveRight=n>0&&right;if(moveLeft||moveRight)while(adx<stepX){if(moveRight)if(this._UpdateTarget(++tx,
-ty))break;if(moveLeft)if(this._UpdateTarget(--tx,ty))break;dx=this._targetX-oldX;adx=Math.abs(dx)}offX=n*C3.clamp(adx,0,stepX)}if(ady>0){const n=Math.sign(dy);const moveDown=n>0&&down;const moveUp=n<0&&up;if(moveDown||moveUp)while(ady<stepY){if(moveDown)if(this._UpdateTarget(tx,++ty))break;if(moveUp)if(this._UpdateTarget(tx,--ty))break;dy=this._targetY-oldY;ady=Math.abs(dy)}offY=n*C3.clamp(ady,0,stepY)}if(offX!=0||offY!=0)if(this._lastX===this._lastX2&&this._lastY===this._lastY2)this._UpdateTarget(tx-
-Math.sign(offX),ty-Math.sign(offY));else{wi.OffsetXY(offX,offY);wi.SetBboxChanged();this._MaybePushOut()}else if(left)this._UpdateTarget(tx-1,ty);else if(right)this._UpdateTarget(tx+1,ty);else if(up)this._UpdateTarget(tx,ty-1);else if(down)this._UpdateTarget(tx,ty+1)}GetPropertyValueByIndex(index){switch(index){case GRID_WIDTH:return this._gridWidth;case GRID_HEIGHT:return this._gridHeight;case GRID_OFFSET_X:return this._gridOffsetX;case GRID_OFFSET_Y:return this._gridOffsetY;case SPEED_X:return this._speedX;
-case SPEED_Y:return this._speedY;case ENABLED:return this._isEnabled;case DEFAULT_CONTROLS:return this._defaultControls}}SetPropertyValueByIndex(index,value){switch(index){case GRID_WIDTH:this._gridWidth=value;this._TargetCurrentPositon();break;case GRID_HEIGHT:this._gridHeight=value;this._TargetCurrentPositon();break;case GRID_OFFSET_X:this._gridOffsetX=value;this._TargetCurrentPositon();break;case GRID_OFFSET_Y:this._gridOffsetY=value;this._TargetCurrentPositon();break;case SPEED_X:this._speedX=
-value;break;case SPEED_Y:this._speedY=value;break;case ENABLED:this.SetEnabled(value);break;case DEFAULT_CONTROLS:this._SetControls(value);break}}SetEnabled(e){this._isEnabled=!!e;if(this._isEnabled)this._StartTicking();else{this._simLeft=false;this._simRight=false;this._simUp=false;this._simDown=false;this._StopTicking()}}_SetControls(e){this._defaultControls=!!e;if(this._defaultControls)this._BindEvents();else this._UnBindEvents()}GetDebuggerProperties(){const prefix="behaviors.tilemovement";const wi=
-this.GetWorldInfo();const gridPosition=this._GridPosition(wi.GetX(),wi.GetY());return[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:prefix+".debugger.grid-x",value:gridPosition[0],onedit:v=>{const position=this._WorldPosition(v,gridPosition[1]);wi.SetX(position[0]);wi.SetBboxChanged()}},{name:prefix+".debugger.grid-y",value:gridPosition[1],onedit:v=>{const position=this._WorldPosition(gridPosition[0],v);wi.SetY(position[1]);wi.SetBboxChanged()}},{name:prefix+".properties.grid-width.name",
-value:this._gridWidth,onedit:v=>{this._gridWidth=v;this._TargetCurrentPositon()}},{name:prefix+".properties.grid-height.name",value:this._gridHeight,onedit:v=>{this._gridHeight=v;this._TargetCurrentPositon()}},{name:prefix+".properties.grid-offset-x.name",value:this._gridOffsetX,onedit:v=>{this._gridOffsetX=v;this._TargetCurrentPositon()}},{name:prefix+".properties.grid-offset-y.name",value:this._gridOffsetY,onedit:v=>{this._gridOffsetY=v;this._TargetCurrentPositon()}},{name:prefix+".properties.speed-x.name",
-value:this._speedX,onedit:v=>this._speedX=v},{name:prefix+".properties.speed-y.name",value:this._speedY,onedit:v=>this._speedY=v},{name:prefix+".debugger.target-x",value:this._targetX,onedit:v=>{this._targetX=v;const position=this._ClampedGridPosition(this._targetX,this._targetY);this._targetGridX=position[0];this._ResetLastPositions()}},{name:prefix+".debugger.target-y",value:this._targetY,onedit:v=>{this._targetY=v;const position=this._ClampedGridPosition(this._targetX,this._targetY);this._targetGridY=
-position[1];this._ResetLastPositions()}},{name:prefix+".debugger.grid-target-x",value:this._targetGridX,onedit:v=>{this._targetGridX=v;const position=this._WorldPosition(this._targetGridX,this._targetGridY);this._targetX=position[0]}},{name:prefix+".debugger.grid-target-y",value:this._targetGridY,onedit:v=>{this._targetGridY=v;const position=this._WorldPosition(this._targetGridX,this._targetGridY);this._targetY=position[1]}},{name:prefix+".properties.enabled.name",value:this._isEnabled,onedit:v=>
-this.SetEnabled(v)},{name:prefix+".properties.default-controls.name",value:this._defaultControls,onedit:v=>this._SetControls(v)}]}]}GetScriptInterfaceClass(){return self.ITileMovementBehaviorInstance}};const map=new WeakMap;self.ITileMovementBehaviorInstance=class ITileMovementBehaviorInstance extends IBehaviorInstance{constructor(){super();map.set(this,IBehaviorInstance._GetInitInst().GetSdkInstance())}set isIgnoringInput(ignore){map.get(this).SetIgnoreInput(!!ignore)}get isIgnoringInput(){return map.get(this)._ignoreInput}simulateControl(dir){let ctrl=
--1;switch(dir){case "left":ctrl=0;break;case "right":ctrl=1;break;case "up":ctrl=2;break;case "down":ctrl=3;break;default:throw new Error(`Invalid direction ${dir}`);}map.get(this).SimulateControl(ctrl)}set isEnabled(enable){map.get(this).SetEnabled(!!enable)}get isEnabled(){return map.get(this)._isEnabled}get isDefaultControls(){return map.get(this).GetDefaultControls()}set isDefaultControls(d){map.get(this)._SetControls(!!d)}setSpeed(x,y){map.get(this).SetSpeed(x,y)}getSpeed(){const inst=map.get(this);
-return[inst._speedX,inst._speedY]}setGridPosition(x,y,immediate){map.get(this).SetGridPosition(x,y,!!immediate)}getGridPosition(){const inst=map.get(this);const wi=inst.GetWorldInfo();const x=wi.GetX();const y=wi.GetY();return[inst._GridX(x,y),inst._GridY(x,y)]}modifyGridDimensions(width,height,x,y){map.get(this).SetGridDimensions(width,height,x,y)}isMoving(){return map.get(this).IsMoving()}isMovingDirection(dir){let ctrl=-1;switch(dir){case "right":ctrl=0;break;case "left":ctrl=1;break;case "down":ctrl=
-2;break;case "up":ctrl=3;break;default:throw new Error(`Invalid direction ${dir}`);}return map.get(this).IsMovingDirection(ctrl)}canMoveTo(x,y){return map.get(this).CanMoveTo(x,y)}canMoveDirection(dir,distance){let ctrl=-1;switch(dir){case "right":ctrl=0;break;case "left":ctrl=1;break;case "down":ctrl=2;break;case "up":ctrl=3;break;default:throw new Error(`Invalid direction ${dir}`);}return map.get(this).CanMoveDirection(ctrl,distance)}getTargetPosition(){const inst=map.get(this);return[inst._targetX,
-inst._targetY]}getGridTargetPosition(){const inst=map.get(this);return[inst._targetGridX,inst._targetGridY]}toGridSpace(x,y){return map.get(this)._GridPosition(x,y)}fromGridSpace(x,y){return map.get(this)._WorldPosition(x,y)}}};
-
-
-'use strict';{const C3=self.C3;C3.Behaviors.TileMovement.Cnds={IsMoving(){return this.IsMoving()},IsMovingDirection(dir){return this.IsMovingDirection(dir)},IsEnabled(){return this._isEnabled},CanMoveTo(x,y){return this.CanMoveTo(x,y)},CanMoveDirection(dir,distance){return this.CanMoveDirection(dir,distance)}}};
-
-
-'use strict';{const C3=self.C3;C3.Behaviors.TileMovement.Acts={SetIgnoreInput(ignore){this.SetIgnoreInput(ignore)},SimulateControl(ctrl){this.SimulateControl(ctrl)},SetEnabled(e){this.SetEnabled(e)},SetSpeed(x,y){this.SetSpeed(x,y)},SetGridPosition(x,y,immediate){this.SetGridPosition(x,y,immediate)},SetGridDimensions(width,height,x,y){this.SetGridDimensions(width,height,x,y)},SetDefaultControls(d){this._SetControls(!!d)}}};
-
-
-'use strict';{const C3=self.C3;C3.Behaviors.TileMovement.Exps={GridX(){const wi=this.GetWorldInfo();return this._GridX(wi.GetX(),wi.GetY())},GridY(){const wi=this.GetWorldInfo();return this._GridY(wi.GetX(),wi.GetY())},SpeedX(){return this._speedX},SpeedY(){return this._speedY},TargetX(){return this._targetX},TargetY(){return this._targetY},GridTargetX(){return this._targetGridX},GridTargetY(){return this._targetGridY}}};
-
-
 
 {
 	const C3 = self.C3;
 	self.C3_GetObjectRefTable = function () {
 		return [
 		C3.Plugins.Sprite,
-		C3.Behaviors.TileMovement,
 		C3.Plugins.Keyboard,
 		C3.Plugins.Text,
 		C3.Plugins.Audio,
@@ -2803,18 +2751,17 @@ inst._targetY]}getGridTargetPosition(){const inst=map.get(this);return[inst._tar
 		C3.Plugins.System.Acts.AddVar,
 		C3.Plugins.Audio.Acts.Play,
 		C3.Plugins.Keyboard.Cnds.IsKeyDown,
+		C3.Plugins.Sprite.Cnds.IsOverlappingOffset,
 		C3.Plugins.Sprite.Acts.MoveForward,
 		C3.Plugins.Sprite.Acts.MoveAtAngle,
 		C3.Plugins.System.Cnds.EveryTick,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.System.Cnds.Every,
 		C3.Plugins.System.Acts.SubVar,
-		C3.Plugins.System.Cnds.CompareVar,
-		C3.Behaviors.TileMovement.Acts.SetIgnoreInput
+		C3.Plugins.System.Cnds.CompareVar
 		];
 	};
 	self.C3_JsPropNameTable = [
-		{MovimentoEmGrid: 0},
 		{Sprite: 0},
 		{Sprite2: 0},
 		{Sprite3: 0},
@@ -2825,6 +2772,7 @@ inst._targetY]}getGridTargetPosition(){const inst=map.get(this);return[inst._tar
 		{Áudio: 0},
 		{Tempo: 0},
 		{Texto3: 0},
+		{Parede: 0},
 		{PontosBrandon: 0},
 		{PontosOtto: 0},
 		{tempo: 0}
@@ -2932,7 +2880,9 @@ inst._targetY]}getGridTargetPosition(){const inst=map.get(this);return[inst._tar
 		() => 1,
 		() => 0,
 		() => "",
+		() => 8,
 		() => 2,
+		() => -8,
 		() => 90,
 		() => -2,
 		p => {
